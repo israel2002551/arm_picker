@@ -1200,7 +1200,7 @@
 
         "broker.hivemq.com",
 
-        Number(8000),
+        Number(8884),
 
         "dashboard_client_" + Math.random().toString(16).substr(2, 6)
 
@@ -1243,7 +1243,7 @@
 
 
     client.connect({
-
+        useSSL: true,
         onSuccess: () => {
 
             document.getElementById("statusBadge").className = "connection-badge connected";
