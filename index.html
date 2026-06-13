@@ -7,53 +7,95 @@
     <link rel="icon" href="data:,">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.25s ease-in-out; }
         :root {
             --primary: #00f5ff;
-            --primary-dim: rgba(0, 245, 255, 0.15);
-            --accent: #0080ff;
-            --danger: #ff3366;
-            --success: #00ff88;
-            --warning: #ffaa00;
-            --bg-dark: #0a0a12;
-            --bg-card: rgba(20, 20, 30, 0.85);
-            --border: rgba(255, 255, 255, 0.08);
-            --text: #ffffff;
-            --text-dim: #8888aa;
+            --primary-glow: rgba(0, 245, 255, 0.35);
+            --accent: #7000ff;
+            --accent-glow: rgba(112, 0, 255, 0.4);
+            --danger: #ff2a5f;
+            --success: #00ff66;
+            --bg-dark: #06060c;
+            --bg-card: rgba(13, 13, 25, 0.7);
+            --border: rgba(255, 255, 255, 0.05);
+            --text: #f0f0f5;
+            --text-dim: #7e7e9a;
         }
         body {
-            font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text);
-            min-height: 100vh; padding: 20px; display: flex; justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-dark); color: var(--text);
+            min-height: 100vh; padding: 24px; display: flex; justify-content: center;
+            background-image: radial-gradient(circle at 50% 0%, rgba(112, 0, 255, 0.12) 0%, transparent 50%),
+                              radial-gradient(circle at 0% 100%, rgba(0, 245, 255, 0.05) 0%, transparent 40%);
+            background-attachment: fixed;
         }
-        .container { width: 100%; max-width: 1280px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 960px) { .container { grid-template-columns: 1fr; } }
+        .container { width: 100%; max-width: 1400px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+        @media (max-width: 1024px) { .container { grid-template-columns: 1fr; } }
+        
         .card {
-            background: var(--bg-card); padding: 28px; border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); border: 1px solid var(--border); backdrop-filter: blur(20px);
+            background: var(--bg-card); padding: 32px; border-radius: 24px;
+            border: 1px solid var(--border); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6); position: relative; overflow: hidden;
         }
-        .header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; }
-        h1 { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .connection-badge { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .connection-badge.connected { background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid rgba(0, 255, 136, 0.3); }
-        .connection-badge.disconnected { background: rgba(255, 51, 102, 0.1); color: var(--danger); border: 1px solid rgba(255, 51, 102, 0.3); }
-        label { display: block; margin: 16px 0 8px; font-weight: 600; font-size: 11px; color: var(--text-dim); text-transform: uppercase; }
-        select { width: 100%; padding: 12px 16px; background: rgba(30, 30, 45, 0.8); border: 1px solid var(--border); border-radius: 10px; color: var(--text); outline: none;}
-        .drivetrain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 20px auto; }
-        .joy-btn { background: #2d2d3a; color: var(--text); border: 1px solid var(--border); padding: 18px; border-radius: 12px; font-weight: 700; cursor: pointer; text-align: center; user-select: none; }
-        .joy-btn:hover { border-color: var(--primary); }
-        .stop-btn { background: var(--danger) !important; }
-        .slider-container { background: rgba(30, 30, 45, 0.6); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .slider-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); }
-        .slider-val { color: var(--primary); font-weight: 700; }
-        input[type="range"] { width: 100%; height: 6px; background: rgba(45, 45, 58, 0.8); border-radius: 3px; outline: none; -webkit-appearance: none; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--primary); border-radius: 50%; }
-        .deploy-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #000; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; }
-        .log-panel { grid-column: 1 / -1; }
-        .log-entries { max-height: 180px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); }
-        .log-entry { padding: 6px 12px; border-left: 3px solid var(--primary); background: rgba(0, 245, 255, 0.02); margin-bottom: 4px; }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.5;
+        }
+        
+        .header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 24px 32px; }
+        h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(135deg, #fff 30%, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 18px; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
+        
+        .connection-badge { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 14px; font-size: 11px; font-weight: 800; letter-spacing: 1px; }
+        .connection-badge.connected { background: rgba(0, 255, 102, 0.06); color: var(--success); border: 1px solid rgba(0, 255, 102, 0.2); box-shadow: 0 0 20px rgba(0, 255, 102, 0.1); }
+        .connection-badge.disconnected { background: rgba(255, 42, 95, 0.06); color: var(--danger); border: 1px solid rgba(255, 42, 95, 0.2); box-shadow: 0 0 20px rgba(255, 42, 95, 0.1); }
+        
+        label { display: block; margin: 20px 0 8px; font-weight: 700; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        select { width: 100%; padding: 14px 18px; background: rgba(18, 18, 32, 0.8); border: 1px solid var(--border); border-radius: 14px; color: var(--text); outline: none; font-size: 14px; font-weight: 500; cursor: pointer; }
+        select:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+        
+        /* Object Visual Matrix Deck */
+        .object-visual-deck { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        @media (max-width: 480px) { .object-visual-deck { grid-template-columns: repeat(2, 1fr); } }
+        .visual-card {
+            background: rgba(18, 18, 32, 0.5); border: 1px solid var(--border); border-radius: 16px;
+            padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+            cursor: pointer; text-align: center; position: relative;
+        }
+        .visual-card:hover { border-color: rgba(0, 245, 255, 0.3); background: rgba(18, 18, 32, 0.8); }
+        .visual-card.active { border-color: var(--primary); background: rgba(0, 245, 255, 0.04); box-shadow: 0 0 20px rgba(0, 245, 255, 0.1); }
+        .visual-card svg { width: 40px; height: 40px; fill: var(--text-dim); }
+        .visual-card.active svg { fill: var(--primary); filter: drop-shadow(0 0 8px var(--primary-glow)); }
+        .visual-card span { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+        .visual-card.active span { color: #fff; }
+
+        /* Drivetrain D-Pad Controls */
+        .drivetrain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 240px; margin: 24px auto; }
+        .joy-btn { background: #161626; color: var(--text); border: 1px solid var(--border); padding: 20px; border-radius: 16px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .joy-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(0, 245, 255, 0.02); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-2px); }
+        .joy-btn:active { transform: translateY(1px); }
+        .stop-btn { background: rgba(255, 42, 95, 0.1) !important; border-color: rgba(255, 42, 95, 0.3) !important; color: var(--danger) !important; }
+        .stop-btn:hover { background: var(--danger) !important; color: #000 !important; box-shadow: 0 0 20px rgba(255, 42, 95, 0.4) !important; }
+        
+        .slider-container { background: rgba(18, 18, 32, 0.4); padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .slider-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); font-weight: 600; margin-bottom: 10px; }
+        .slider-val { color: var(--primary); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        input[type="range"] { width: 100%; height: 5px; background: #161626; border-radius: 4px; outline: none; -webkit-appearance: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #fff; border: 2px solid var(--primary); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--primary); }
+        input[type="range"]::-webkit-slider-thumb:hover { background: var(--primary); transform: scale(1.1); }
+        
+        .deploy-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--primary), #00aaff); color: #06060c; font-weight: 800; border: none; border-radius: 16px; cursor: pointer; font-size: 14px; letter-spacing: 0.5px; box-shadow: 0 8px 25px rgba(0, 245, 255, 0.25); margin-top: 10px; }
+        .deploy-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0, 245, 255, 0.4); filter: brightness(1.1); }
+        .deploy-btn:active { transform: translateY(1px); }
+        
+        .log-panel { grid-column: 1 / -1; padding: 24px; }
+        .log-entries { max-height: 200px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #a5a5cc; }
+        .log-entry { padding: 8px 16px; border-left: 2px solid var(--primary); background: rgba(0, 245, 255, 0.01); margin-bottom: 6px; border-radius: 0 8px 8px 0; }
+        .log-entries::-webkit-scrollbar { width: 6px; }
+        .log-entries::-webkit-scrollbar-track { background: transparent; }
+        .log-entries::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -62,46 +104,64 @@
     <div class="card header">
         <div>
             <h1>ARMPI PRO MASTER CONTROLLER</h1>
-            <div style="font-size:11px; color:var(--text-dim);">HIVEMQ CLOUD SYSTEM BRIDGE</div>
+            <div style="font-size:11px; color:var(--text-dim); font-weight:600; letter-spacing:1px; margin-top:4px;">SECURE INTEGRATED HARDWARE TUNNEL</div>
         </div>
         <div id="statusBadge" class="connection-badge disconnected">
-            <span id="statusText">CONNECTING...</span>
+            <span id="statusText">CONNECTING NETWORK MATRIX</span>
         </div>
     </div>
 
     <div class="card">
-        <h2>Autonomous Target Specs</h2>
-        <label>Target Object</label>
-        <select id="targetObject">
-            <option value="sports ball">⚽ Tennis / Sports Ball</option>
-            <option value="cup">🥛 Cup / Bottle</option>
-            <option value="apple">🍎 Apple / Fruit</option>
-            <option value="box">📦 Box / Container</option>
-        </select>
-        <label>Target Color</label>
+        <h2>🤖 Autonomous Tracking Specifications</h2>
+        
+        <label>Target Object Vector Profile</label>
+        <div class="object-visual-deck">
+            <div class="visual-card active" onclick="selectObject(this, 'sports ball')">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-4.5-9c-.83 0-1.5-.67-1.5-1.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm9 0c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6 18 6.67 18 7.5 17.33 9 16.5 9zm-4.5 6.5c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z"/></svg>
+                <span>Sports Ball</span>
+            </div>
+            <div class="visual-card" onclick="selectObject(this, 'cup')">
+                <svg viewBox="0 0 24 24"><path d="M2 21h20v-2H2v2zM20 3H4v10c0 2.21 1.79 4 4 4h8c2.21 0 4-1.79 4-4V3zm-2 10c0 1.1-.9 2-2 2H8c-1.1 0-2-.9-2-2V5h12v8z"/></svg>
+                <span>Cup Profile</span>
+            </div>
+            <div class="visual-card" onclick="selectObject(this, 'apple')">
+                <svg viewBox="0 0 24 24"><path d="M20 10c0-4.42-3.58-8-8-8s-8 3.58-8 8c0 3.82 2.67 7 6.24 7.76l-.42.92C9.4 19.57 8.78 20 8 20c-1.1 0-2-.9-2-2h-2c0 2.21 1.79 4 4 4 .96 0 1.84-.36 2.53-.93l.61-1.33c1.17.17 2.37.26 3.61.26 4.42 0 8-3.58 8-8zm-8 6c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+                <span>Fruit Cargo</span>
+            </div>
+            <div class="visual-card" onclick="selectObject(this, 'box')">
+                <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+                <span>Container</span>
+            </div>
+        </div>
+
+        <label>Vision Boundary Tracking Color</label>
         <select id="targetColor">
-            <option value="yellow">Yellow</option>
-            <option value="red">Red</option>
-            <option value="blue">Blue</option>
-            <option value="green">Green</option>
+            <option value="yellow">🟡 Chromatic Yellow (Baseline Target)</option>
+            <option value="red">🔴 Chromatic Red</option>
+            <option value="blue">🔵 Chromatic Blue</option>
+            <option value="green">🟢 Chromatic Green</option>
         </select>
-        <label>Confidence Gate</label>
+
+        <label>Neural Filter Metrics</label>
         <div class="slider-container">
-            <div class="slider-header"><span>YOLO Barrier</span><span class="slider-val" id="confValText">75%</span></div>
+            <div class="slider-header"><span>YOLO Spatial Confidence Boundary</span><span class="slider-val" id="confValText">75%</span></div>
             <input type="range" id="confidenceSlider" min="10" max="99" value="75" oninput="document.getElementById('confValText').innerText=this.value+'%'">
         </div>
-        <label>Mission Routine</label>
+
+        <label>Operational Task Strategy Routine</label>
         <select id="missionMode">
-            <option value="track">📍 Track & Follow Only</option>
-            <option value="grab">🦾 Detect & Adaptive Grab</option>
-            <option value="sort">📦 Industrial Route Sortation</option>
+            <option value="track">📍 Coordinate Follow Only (Chassis Align)</option>
+            <option value="grab">🦾 Object Spatial Intercept & Adaptive Grab</option>
+            <option value="sort">📦 Industrial Sortation Loop (Color Routine)</option>
         </select>
+
         <button class="deploy-btn" onclick="deployAutonomousConfig()">🚀 Sync Autonomous Agent Params</button>
     </div>
 
     <div class="card">
-        <h2>Manual Override Diagnostics</h2>
-        <label>Chassis Drivetrain Thrust Vector</label>
+        <h2>🕹️ Manual Override Matrix & Diagnostics</h2>
+        
+        <label>Kinematic Drivetrain Direct Thrust Vectors</label>
         <div class="drivetrain-grid">
             <div></div><div class="joy-btn" onclick="sendDriveCmd(100, 0)">▲</div><div></div>
             <div class="joy-btn" onclick="sendDriveCmd(0, -100)">◀</div>
@@ -110,31 +170,31 @@
             <div></div><div class="joy-btn" onclick="sendDriveCmd(-100, 0)">▼</div><div></div>
         </div>
 
-        <label>6-DoF Joint Manipulator Array</label>
+        <label>Manipulator Array Joint Angle Matrix Overrides</label>
         <div class="slider-container">
-            <div class="slider-header"><span>Base Rotation (Joint 1)</span><span class="slider-val" id="vBase">90°</span></div>
+            <div class="slider-header"><span>Base Rotation (Joint 1 Vector)</span><span class="slider-val" id="vBase">90°</span></div>
             <input type="range" min="0" max="180" value="90" oninput="moveServo('base', this.value)">
         </div>
         <div class="slider-container">
-            <div class="slider-header"><span>Shoulder Pitch (Joint 2)</span><span class="slider-val" id="vShoulder">30°</span></div>
+            <div class="slider-header"><span>Shoulder Pitch Axis (Joint 2 Vector)</span><span class="slider-val" id="vShoulder">30°</span></div>
             <input type="range" min="0" max="180" value="30" oninput="moveServo('shoulder', this.value)">
         </div>
         <div class="slider-container">
-            <div class="slider-header"><span>Elbow Pitch (Joint 3)</span><span class="slider-val" id="vElbow">110°</span></div>
+            <div class="slider-header"><span>Elbow Flexion Extension (Joint 3 Vector)</span><span class="slider-val" id="vElbow">110°</span></div>
             <input type="range" min="0" max="180" value="110" oninput="moveServo('elbow', this.value)">
         </div>
         <div class="slider-container">
-            <div class="slider-header"><span>Wrist Tilt (Joint 4)</span><span class="slider-val" id="vWrist">85°</span></div>
+            <div class="slider-header"><span>Wrist Tilt Plane (Joint 4 Vector)</span><span class="slider-val" id="vWrist">85°</span></div>
             <input type="range" min="0" max="180" value="85" oninput="moveServo('wrist', this.value)">
         </div>
         <div class="slider-container">
-            <div class="slider-header"><span>Claw Gripper (Joint 5)</span><span class="slider-val" id="vClaw">40°</span></div>
+            <div class="slider-header"><span>End-Effector Claw Aperture (Joint 5 Vector)</span><span class="slider-val" id="vClaw">40°</span></div>
             <input type="range" min="10" max="130" value="40" oninput="moveServo('claw', this.value)">
         </div>
     </div>
 
     <div class="card log-panel">
-        <h2>Telemetry Stream Output</h2>
+        <h2>📊 Secure Real-Time Telemetry Log Stream</h2>
         <div class="log-entries" id="logEntries"></div>
     </div>
 </div>
@@ -142,32 +202,40 @@
 <script>
     const MANUAL_TOPIC_PREFIX = "efe_robot_2026/manual/cmd";
     const uniqueId = "dash_hivemq_" + Math.random().toString(36).substring(2, 8);
+    let activeSelectedObject = "sports ball";
     
-    // Configured directly to HiveMQ public websocket port
-    const client = new Paho.MQTT.Client("broker.hivemq.com", Number(8000), "/mqtt", uniqueId);
+    // Encrypted WebSockets Node Endpoint via verified Secure Port 8014
+    const client = new Paho.MQTT.Client("broker.hivemq.com", Number(8014), "/mqtt", uniqueId);
 
     client.onConnectionLost = (res) => {
         document.getElementById("statusBadge").className = "connection-badge disconnected";
-        document.getElementById("statusText").innerText = "DISCONNECTED";
-        addLog("❌ Connection dropped. Retrying tunnel handshake...");
+        document.getElementById("statusText").innerText = "OFFLINE - INTERCEPT FAILURE";
+        addLog("❌ Operational secure telemetry stream dropped: " + res.errorMessage + ". Re-instantiating tunnel handshake...");
         setTimeout(() => { connect(); }, 3000);
     };
 
     function connect() {
         client.connect({
-            useSSL: false,
-            timeout: 10,
+            useSSL: true, 
+            timeout: 12,
             keepAliveInterval: 45,
             onSuccess: () => {
                 document.getElementById("statusBadge").className = "connection-badge connected";
-                document.getElementById("statusText").innerText = "LINK ACTIVE";
-                addLog("✅ Registered successfully on public HiveMQ infrastructure network.");
+                document.getElementById("statusText").innerText = "WSS TELEMETRY SECURE";
+                addLog("✅ Secure encrypted handshake execution complete on broker.hivemq.com.");
             },
             onFailure: (err) => {
-                addLog("❌ Handshake refused. Retrying...");
+                addLog("❌ Tunnel architecture refused link handshake. Retrying sequence...");
                 setTimeout(connect, 3000);
             }
         });
+    }
+
+    function selectObject(element, value) {
+        document.querySelectorAll('.visual-card').forEach(card => card.classList.remove('active'));
+        element.classList.add('active');
+        activeSelectedObject = value;
+        addLog(`🎯 Focus shift: Target profile parameter set to [${value.toUpperCase()}]`);
     }
 
     function addLog(msg) {
@@ -176,21 +244,20 @@
         entry.className = 'log-entry';
         entry.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
         container.insertBefore(entry, container.firstChild);
-        while(container.children.length > 30) { container.removeChild(container.lastChild); }
+        while(container.children.length > 25) { container.removeChild(container.lastChild); }
     }
 
     function sendMqtt(topic, payload) {
-        if (!client.isConnected()) { addLog("⚠️ Command blocked: Network channel offline."); return; }
+        if (!client.isConnected()) { addLog("⚠️ Instruction aborted: Secure socket buffer reports offline state."); return; }
         const message = new Paho.MQTT.Message(JSON.stringify(payload));
         message.destinationName = topic;
         client.send(message);
     }
 
     function sendDriveCmd(speed, steer) {
-        // Source value tags this packet explicit to flag the hardware override systems
         const payload = { speed: speed, steer: steer, hold: (speed === 0 && steer === 0), source: "manual" };
         sendMqtt(MANUAL_TOPIC_PREFIX + "/move", payload);
-        addLog(`➔ Sent Manual Drive Intent -> Speed: ${speed} | Steer: ${steer}`);
+        addLog(`➔ Manual thrust vector dispatch -> Vel: ${speed}% | Steer Offset: ${steer}%`);
     }
 
     function moveServo(joint, value) {
@@ -206,12 +273,12 @@
         const payload = {
             action: document.getElementById("missionMode").value,
             force_limit: 2000,
-            target_object: document.getElementById("targetObject").value,
+            target_object: activeSelectedObject,
             target_color: document.getElementById("targetColor").value,
             confidence_threshold: parseInt(document.getElementById("confidenceSlider").value) / 100
         };
         sendMqtt("efe_robot_2026/dashboard/config", payload);
-        addLog("🚀 Dispatched strategic profile to efe_robot_2026/dashboard/config");
+        addLog(`🚀 Profile deployed to AI pipeline node -> Object: ${activeSelectedObject.toUpperCase()} | Color: ${payload.target_color.toUpperCase()}`);
     }
 
     connect();
