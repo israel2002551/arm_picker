@@ -219,6 +219,8 @@
             useSSL: true, 
             timeout: 12,
             keepAliveInterval: 45,
+            cleanSession: true,        // CRITICAL: Tells the broker to clear stale data states
+            mqttVersion: 4,
             onSuccess: () => {
                 document.getElementById("statusBadge").className = "connection-badge connected";
                 document.getElementById("statusText").innerText = "WSS TELEMETRY SECURE";
