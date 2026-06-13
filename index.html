@@ -56,7 +56,6 @@
         select { width: 100%; padding: 14px 18px; background: rgba(18, 18, 32, 0.8); border: 1px solid var(--border); border-radius: 14px; color: var(--text); outline: none; font-size: 14px; font-weight: 500; cursor: pointer; }
         select:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
         
-        /* Object Visual Matrix Deck */
         .object-visual-deck { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
         @media (max-width: 480px) { .object-visual-deck { grid-template-columns: repeat(2, 1fr); } }
         .visual-card {
@@ -71,7 +70,6 @@
         .visual-card span { font-size: 12px; font-weight: 600; color: var(--text-dim); }
         .visual-card.active span { color: #fff; }
 
-        /* Drivetrain D-Pad Controls */
         .drivetrain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 240px; margin: 24px auto; }
         .joy-btn { background: #161626; color: var(--text); border: 1px solid var(--border); padding: 20px; border-radius: 16px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .joy-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(0, 245, 255, 0.02); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-2px); }
@@ -104,10 +102,10 @@
     <div class="card header">
         <div>
             <h1>ARMPI PRO MASTER CONTROLLER</h1>
-            <div style="font-size:11px; color:var(--text-dim); font-weight:600; letter-spacing:1px; margin-top:4px;">SECURE INTEGRATED HARDWARE TUNNEL</div>
+            <div style="font-size:11px; color:var(--text-dim); font-weight:600; letter-spacing:1px; margin-top:4px;">SECURE INTEGRATED EMQX NETWORK MATRIX</div>
         </div>
         <div id="statusBadge" class="connection-badge disconnected">
-            <span id="statusText">CONNECTING NETWORK MATRIX</span>
+            <span id="statusText">CONNECTING TUNNEL EXTENSION</span>
         </div>
     </div>
 
@@ -201,33 +199,33 @@
 
 <script>
     const MANUAL_TOPIC_PREFIX = "efe_robot_2026/manual/cmd";
-    const uniqueId = "dash_hivemq_" + Math.random().toString(36).substring(2, 8);
+    const uniqueId = "dash_emqx_sec_" + Math.random().toString(36).substring(2, 8);
     let activeSelectedObject = "sports ball";
     
-    // Encrypted WebSockets Node Endpoint via verified Secure Port 8014
-    const client = new Paho.MQTT.Client("broker.hivemq.com", Number(8014), "/mqtt", uniqueId);
+    // Configured securely to EMQX cluster over WSS port 8084
+    const client = new Paho.MQTT.Client("broker.emqx.io", Number(8084), "/mqtt", uniqueId);
 
     client.onConnectionLost = (res) => {
         document.getElementById("statusBadge").className = "connection-badge disconnected";
-        document.getElementById("statusText").innerText = "OFFLINE - INTERCEPT FAILURE";
-        addLog("❌ Operational secure telemetry stream dropped: " + res.errorMessage + ". Re-instantiating tunnel handshake...");
+        document.getElementById("statusText").innerText = "OFFLINE - RECONNECTING";
+        addLog("❌ Telemetry lost: " + res.errorMessage + ". Re-instantiating tunnel...");
         setTimeout(() => { connect(); }, 3000);
     };
 
     function connect() {
         client.connect({
             useSSL: true, 
-            timeout: 12,
+            timeout: 10,
             keepAliveInterval: 45,
-            cleanSession: true,        // CRITICAL: Tells the broker to clear stale data states
+            cleanSession: true,
             mqttVersion: 4,
             onSuccess: () => {
                 document.getElementById("statusBadge").className = "connection-badge connected";
-                document.getElementById("statusText").innerText = "WSS TELEMETRY SECURE";
-                addLog("✅ Secure encrypted handshake execution complete on broker.hivemq.com.");
+                document.getElementById("statusText").innerText = "WSS SECURE LINK ACTIVE";
+                addLog("✅ Secure encrypted WSS tunnel connected successfully to broker.emqx.io.");
             },
             onFailure: (err) => {
-                addLog("❌ Tunnel architecture refused link handshake. Retrying sequence...");
+                addLog("❌ Tunnel handshake refused: " + err.errorMessage + ". Retrying...");
                 setTimeout(connect, 3000);
             }
         });
@@ -237,7 +235,7 @@
         document.querySelectorAll('.visual-card').forEach(card => card.classList.remove('active'));
         element.classList.add('active');
         activeSelectedObject = value;
-        addLog(`🎯 Focus shift: Target profile parameter set to [${value.toUpperCase()}]`);
+        addLog(`🎯 Target profile parameter update: [${value.toUpperCase()}]`);
     }
 
     function addLog(msg) {
@@ -250,7 +248,7 @@
     }
 
     function sendMqtt(topic, payload) {
-        if (!client.isConnected()) { addLog("⚠️ Instruction aborted: Secure socket buffer reports offline state."); return; }
+        if (!client.isConnected()) { addLog("⚠️ Instruction aborted: Socket offline."); return; }
         const message = new Paho.MQTT.Message(JSON.stringify(payload));
         message.destinationName = topic;
         client.send(message);
@@ -259,7 +257,7 @@
     function sendDriveCmd(speed, steer) {
         const payload = { speed: speed, steer: steer, hold: (speed === 0 && steer === 0), source: "manual" };
         sendMqtt(MANUAL_TOPIC_PREFIX + "/move", payload);
-        addLog(`➔ Manual thrust vector dispatch -> Vel: ${speed}% | Steer Offset: ${steer}%`);
+        addLog(`➔ Sent Drive CMD -> Vel: ${speed}% | Steer: ${steer}%`);
     }
 
     function moveServo(joint, value) {
@@ -280,7 +278,7 @@
             confidence_threshold: parseInt(document.getElementById("confidenceSlider").value) / 100
         };
         sendMqtt("efe_robot_2026/dashboard/config", payload);
-        addLog(`🚀 Profile deployed to AI pipeline node -> Object: ${activeSelectedObject.toUpperCase()} | Color: ${payload.target_color.toUpperCase()}`);
+        addLog(`🚀 Config profile sent -> Object: ${activeSelectedObject.toUpperCase()} | Color: ${payload.target_color.toUpperCase()}`);
     }
 
     connect();
