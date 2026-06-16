@@ -171,23 +171,23 @@
         <label>Manipulator Array Joint Angle Matrix Overrides</label>
         <div class="slider-container">
             <div class="slider-header"><span>Base Rotation (Joint 1 Vector)</span><span class="slider-val" id="vBase">90°</span></div>
-            <input type="range" min="0" max="180" value="90" oninput="moveServo('base', this.value)">
+            <input id="slBase" type="range" min="0" max="180" value="90" oninput="moveServo('base', this.value)">
         </div>
         <div class="slider-container">
             <div class="slider-header"><span>Shoulder Pitch Axis (Joint 2 Vector)</span><span class="slider-val" id="vShoulder">30°</span></div>
-            <input type="range" min="0" max="180" value="30" oninput="moveServo('shoulder', this.value)">
+            <input id="slShoulder" type="range" min="0" max="180" value="30" oninput="moveServo('shoulder', this.value)">
         </div>
         <div class="slider-container">
             <div class="slider-header"><span>Elbow Flexion Extension (Joint 3 Vector)</span><span class="slider-val" id="vElbow">110°</span></div>
-            <input type="range" min="0" max="180" value="110" oninput="moveServo('elbow', this.value)">
+            <input id="slElbow" type="range" min="0" max="180" value="110" oninput="moveServo('elbow', this.value)">
         </div>
         <div class="slider-container">
             <div class="slider-header"><span>Wrist Tilt Plane (Joint 4 Vector)</span><span class="slider-val" id="vWrist">85°</span></div>
-            <input type="range" min="0" max="180" value="85" oninput="moveServo('wrist', this.value)">
+            <input id="slWrist" type="range" min="0" max="180" value="85" oninput="moveServo('wrist', this.value)">
         </div>
         <div class="slider-container">
-            <div class="slider-header"><span>End-Effector Claw Aperture (Joint 5 Vector)</span><span class="slider-val" id="vClaw">40°</span></div>
-            <input type="range" min="10" max="130" value="40" oninput="moveServo('claw', this.value)">
+            <div class="slider-header"><span>End-Effector Claw Aperture (Joint 5 Vector)</span><span class="slider-val" id="vClaw">120°</span></div>
+            <input id="slClaw" type="range" min="10" max="130" value="120" oninput="moveServo('claw', this.value)">
         </div>
     </div>
 
@@ -202,7 +202,6 @@
     const uniqueId = "dash_emqx_sec_" + Math.random().toString(36).substring(2, 8);
     let activeSelectedObject = "sports ball";
     
-    // Configured securely to EMQX cluster over WSS port 8084
     const client = new Paho.MQTT.Client("broker.emqx.io", Number(8084), "/mqtt", uniqueId);
 
     client.onConnectionLost = (res) => {
@@ -225,7 +224,7 @@
                 addLog("✅ Secure encrypted WSS tunnel connected successfully to broker.emqx.io.");
             },
             onFailure: (err) => {
-                addLog("❌ Tunnel handshake refused: " + err.errorMessage + ". Retrying...");
+                addLog("❌ Tunnel handshake refused. Retrying...");
                 setTimeout(connect, 3000);
             }
         });
@@ -270,15 +269,23 @@
     }
 
     function deployAutonomousConfig() {
+        // Appends exact manual slider configurations directly into the sync payload
         const payload = {
             action: document.getElementById("missionMode").value,
             force_limit: 2000,
             target_object: activeSelectedObject,
             target_color: document.getElementById("targetColor").value,
-            confidence_threshold: parseInt(document.getElementById("confidenceSlider").value) / 100
+            confidence_threshold: parseInt(document.getElementById("confidenceSlider").value) / 100,
+            custom_home: {
+                base: parseInt(document.getElementById("slBase").value),
+                shoulder: parseInt(document.getElementById("slShoulder").value),
+                elbow: parseInt(document.getElementById("slElbow").value),
+                wrist: parseInt(document.getElementById("slWrist").value),
+                claw: parseInt(document.getElementById("slClaw").value)
+            }
         };
         sendMqtt("efe_robot_2026/dashboard/config", payload);
-        addLog(`🚀 Config profile sent -> Object: ${activeSelectedObject.toUpperCase()} | Color: ${payload.target_color.toUpperCase()}`);
+        addLog(`🚀 Config profile + custom rest posture deployed -> B:${payload.custom_home.base}° S:${payload.custom_home.shoulder}°`);
     }
 
     connect();
